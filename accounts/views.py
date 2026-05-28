@@ -1,6 +1,8 @@
 from django.shortcuts import render
 
 # Create your views here.
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -22,6 +24,37 @@ class RegisterAPIView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class LoginAPIView(APIView):
+
+    def post(self, request):
+
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = authenticate(
+            username=username,
+            password=password
+        )
+
+        if user is not None:
+
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+
+                'message': 'Login Successful',
+
+                'access': str(refresh.access_token),
+
+                'refresh': str(refresh)
+
+            }, status=status.HTTP_200_OK)
+
+        return Response({
+
+            'message': 'Invalid Username or Password'
+
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
 class DashboardAPIView(APIView):
 
